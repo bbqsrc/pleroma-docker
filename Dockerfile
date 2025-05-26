@@ -28,6 +28,7 @@ RUN addgroup pleroma && \
 WORKDIR /opt/pleroma
 RUN git clone https://git.pleroma.social/pleroma/pleroma.git . && \
     git checkout ${PLEROMA_VERSION} && \
+    mkdir -p /opt/pleroma/mounted-config && \
     chown -R pleroma:pleroma /opt/pleroma
 
 # Install Hex and Rebar
@@ -75,17 +76,13 @@ WORKDIR /opt/pleroma
 # Switch to pleroma user
 USER pleroma
 
-# Create config directory as pleroma user
-RUN mkdir -p /opt/pleroma/mounted-config
-
 # Install Hex and Rebar for runtime
 RUN mix local.hex --force && \
     mix local.rebar --force
 
 # Create directories for uploads and static files
 RUN mkdir -p uploads && \
-    mkdir -p static && \
-    mkdir -p mounted-config
+    mkdir -p static
 
 # Expose port
 EXPOSE 4000
