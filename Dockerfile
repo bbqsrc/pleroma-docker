@@ -78,28 +78,9 @@ if [ -d "/config" ]; then\n\
 fi' > /docker-entrypoint-init.d/01-config-overlay.sh && \
     chmod +x /docker-entrypoint-init.d/01-config-overlay.sh
 
-# Create main entrypoint script
-RUN echo '#!/bin/sh\n\
-set -e\n\
-\n\
-# Run init scripts\n\
-if [ -d "/docker-entrypoint-init.d" ]; then\n\
-  for f in /docker-entrypoint-init.d/*.sh; do\n\
-    if [ -f "$f" ]; then\n\
-      echo "Running $f"\n\
-      "$f"\n\
-    fi\n\
-  done\n\
-fi\n\
-\n\
-# Switch to pleroma user and run the command\n\
-cd /opt/pleroma\n\
-if [ $# -eq 0 ]; then\n\
-  exec su pleroma -s /bin/sh -c "mix ecto.migrate && mix phx.server"\n\
-else\n\
-  exec su pleroma -s /bin/sh -c "$*"\n\
-fi' > /docker-entrypoint.sh && \
-    chmod +x /docker-entrypoint.sh
+# Copy and set up entrypoint script
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Copy built application from builder stage
 COPY --from=builder --chown=pleroma:pleroma /opt/pleroma /opt/pleroma
