@@ -17,8 +17,8 @@ else
     # Copy the generated config to the mounted directory for persistence
     if [ -f "/opt/pleroma/config/generated_config.exs" ]; then
         echo "Copying generated config to /config for persistence..."
+        cp /opt/pleroma/config/setup_db.psql /config/setup_db.psql
         cp /opt/pleroma/config/generated_config.exs /config/prod.secret.exs
-        cp /opt/pleroma/config/generated_config.exs /opt/pleroma/config/prod.secret.exs
         echo "Configuration generated and saved"
         exit 0
     else
