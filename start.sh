@@ -20,6 +20,7 @@ else
         cp /opt/pleroma/config/generated_config.exs /config/prod.secret.exs
         cp /opt/pleroma/config/generated_config.exs /opt/pleroma/config/prod.secret.exs
         echo "Configuration generated and saved"
+        exit 0
     else
         echo "ERROR: Configuration generation failed - no generated_config.exs found"
         exit 1
