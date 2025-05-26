@@ -48,9 +48,6 @@ FROM alpine:3.18
 RUN apk update && apk upgrade && \
     apk add --no-cache \
     erlang \
-    erlang-runtime-tools \
-    erlang-xmerl \
-    erlang-eldap \
     elixir \
     postgresql-client \
     file \
