@@ -94,8 +94,12 @@ fi\n\
 \n\
 # Switch to pleroma user and run the command\n\
 cd /opt/pleroma\n\
-exec su pleroma -s /bin/sh -c "$*"' > /usr/local/bin/docker-entrypoint.sh && \
-    chmod +x /usr/local/bin/docker-entrypoint.sh
+if [ $# -eq 0 ]; then\n\
+  exec su pleroma -s /bin/sh -c "mix ecto.migrate && mix phx.server"\n\
+else\n\
+  exec su pleroma -s /bin/sh -c "$*"\n\
+fi' > /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
 
 # Copy built application from builder stage
 COPY --from=builder --chown=pleroma:pleroma /opt/pleroma /opt/pleroma
@@ -125,5 +129,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4000/api/v1/instance || exit 1
 
 # Set entrypoint and default command
-ENTRYPOINT ["docker-entrypoint.sh"]
-CMD ["mix ecto.migrate && mix phx.server"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD []
