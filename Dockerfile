@@ -17,9 +17,6 @@ RUN apk update && apk upgrade && \
     cmake \
     file-dev \
     erlang \
-    erlang-runtime-tools \
-    erlang-xmerl \
-    erlang-eldap \
     elixir \
     postgresql-client
         
