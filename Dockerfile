@@ -72,7 +72,7 @@ RUN chmod +x /opt/pleroma/start.sh
 # Set working directory
 WORKDIR /opt/pleroma
 
-RUN mkdir -p /config && chown -R pleroma:pleroma /config
+RUN mkdir -p /tmp/config
 
 # Switch to pleroma user
 USER pleroma

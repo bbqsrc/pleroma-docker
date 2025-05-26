@@ -28,7 +28,7 @@ services:
     volumes:
       - pleroma_uploads:/opt/pleroma/uploads
       - pleroma_static:/opt/pleroma/static
-      - ./config:/config
+      - ./config:/tmp/config
     depends_on:
       db:
         condition: service_healthy
