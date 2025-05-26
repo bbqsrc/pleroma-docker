@@ -66,6 +66,10 @@ RUN addgroup pleroma && \
 # Copy built application from builder stage
 COPY --from=builder --chown=pleroma:pleroma /opt/pleroma /opt/pleroma
 
+# Copy start script
+COPY start.sh /opt/pleroma/start.sh
+RUN chmod +x /opt/pleroma/start.sh
+
 # Set working directory
 WORKDIR /opt/pleroma
 
@@ -87,4 +91,4 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4000/api/v1/instance || exit 1
 
-CMD ["sh", "-c", "mix ecto.migrate && mix phx.server"]
+CMD ["/opt/pleroma/start.sh"]
