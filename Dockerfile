@@ -2,7 +2,7 @@
 # Based on https://docs.pleroma.social/backend/installation/alpine_linux_en/
 
 # Build stage
-FROM alpine:3.18 as builder
+FROM alpine:3.18 AS builder
 
 # Build argument for Pleroma version (can be a branch, tag, or commit hash)
 ARG PLEROMA_VERSION=stable
@@ -55,6 +55,7 @@ RUN apk update && apk upgrade && \
     ffmpeg \
     exiftool \
     curl \
+    git \
     ca-certificates
 
 # Create pleroma user
