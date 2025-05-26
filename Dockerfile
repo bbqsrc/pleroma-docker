@@ -7,6 +7,8 @@ FROM alpine:3.18 as builder
 # Build argument for Pleroma version (can be a branch, tag, or commit hash)
 ARG PLEROMA_VERSION=stable
 
+RUN awk 'NR==2' /etc/apk/repositories | sed 's/main/community/' | tee -a /etc/apk/repositories
+
 # Install build dependencies
 RUN apk update && apk upgrade && \
     apk add --no-cache \
@@ -20,7 +22,7 @@ RUN apk update && apk upgrade && \
     erlang-eldap \
     elixir \
     postgresql-client
-
+        
 # Create pleroma user
 RUN addgroup pleroma && \
     adduser -S -s /bin/false -h /opt/pleroma -H -G pleroma pleroma
