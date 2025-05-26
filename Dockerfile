@@ -76,7 +76,7 @@ WORKDIR /opt/pleroma
 USER pleroma
 
 # Create config directory as pleroma user
-RUN mkdir -p /tmp/config
+RUN mkdir -p /opt/pleroma/mounted-config
 
 # Install Hex and Rebar for runtime
 RUN mix local.hex --force && \
@@ -84,7 +84,8 @@ RUN mix local.hex --force && \
 
 # Create directories for uploads and static files
 RUN mkdir -p uploads && \
-    mkdir -p static
+    mkdir -p static && \
+    mkdir -p mounted-config
 
 # Expose port
 EXPOSE 4000
