@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pleroma
+      POSTGRES_PASSWORD: pleroma
+      POSTGRES_DB: pleroma
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pleroma"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  pleroma:
+    build:
+      context: .
+      args:
+        PLEROMA_VERSION: ${PLEROMA_VERSION:-stable}
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      - MIX_ENV=prod
+      - DATABASE_URL=ecto://pleroma:pleroma@db/pleroma
+    volumes:
+      - pleroma_uploads:/opt/pleroma/uploads
+      - pleroma_static:/opt/pleroma/static
+      - ./config:/opt/pleroma/config
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000/api/v1/instance"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./ssl:/etc/ssl/certs:ro
+    depends_on:
+      - pleroma
+
+volumes:
+  postgres_data:
+  pleroma_uploads:
+  pleroma_static: 
