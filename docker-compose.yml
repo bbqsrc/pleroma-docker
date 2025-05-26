@@ -32,9 +32,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    privileged: true
-    cap_add:
-      - SYS_ADMIN
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:4000/api/v1/instance"]
       interval: 30s
