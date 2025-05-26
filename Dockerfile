@@ -63,6 +63,43 @@ RUN apk update && apk upgrade && \
 RUN addgroup pleroma && \
     adduser -S -s /bin/false -h /opt/pleroma -H -G pleroma pleroma
 
+# Create directories for overlay filesystem (as root)
+RUN mkdir -p /config-overlay/upper /config-overlay/work && \
+    chown -R pleroma:pleroma /config-overlay
+
+# Create init script for overlay mount
+RUN echo '#!/bin/sh\n\
+# Create overlay mount for config directory\n\
+if [ -d "/config" ]; then\n\
+  echo "Setting up overlay filesystem for config..."\n\
+  mount -t overlay overlay \\\n\
+    -o lowerdir=/opt/pleroma/config,upperdir=/config,workdir=/config-overlay/work \\\n\
+    /opt/pleroma/config\n\
+fi' > /docker-entrypoint-init.d/01-config-overlay.sh && \
+    chmod +x /docker-entrypoint-init.d/01-config-overlay.sh
+
+# Create main entrypoint script
+RUN echo '#!/bin/sh\n\
+set -e\n\
+\n\
+# Run init scripts\n\
+if [ -d "/docker-entrypoint-init.d" ]; then\n\
+  for f in /docker-entrypoint-init.d/*.sh; do\n\
+    if [ -f "$f" ]; then\n\
+      echo "Running $f"\n\
+      "$f"\n\
+    fi\n\
+  done\n\
+fi\n\
+\n\
+# Switch to pleroma user and run the command\n\
+cd /opt/pleroma\n\
+exec su pleroma -s /bin/sh -c "$*"' > /docker-entrypoint.sh && \
+    chmod +x /docker-entrypoint.sh
+
+# Create init script directory
+RUN mkdir -p /docker-entrypoint-init.d
+
 # Copy built application from builder stage
 COPY --from=builder --chown=pleroma:pleroma /opt/pleroma /opt/pleroma
 
@@ -80,6 +117,9 @@ RUN mix local.hex --force && \
 RUN mkdir -p uploads && \
     mkdir -p static
 
+# Switch back to root for startup script
+USER root
+
 # Expose port
 EXPOSE 4000
 
@@ -87,22 +127,6 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4000/api/v1/instance || exit 1
 
-# Create directories for overlay filesystem
-RUN mkdir -p /config-overlay/upper /config-overlay/work
-
-# Create startup script that sets up overlay mount
-RUN echo '#!/bin/sh\n\
-# Create overlay mount for config directory\n\
-if [ -d "/config" ]; then\n\
-  echo "Setting up overlay filesystem for config..."\n\
-  mount -t overlay overlay \\\n\
-    -o lowerdir=/opt/pleroma/config,upperdir=/config,workdir=/config-overlay/work \\\n\
-    /opt/pleroma/config\n\
-fi\n\
-\n\
-# Run migrations and start server\n\
-mix ecto.migrate && mix phx.server' > /opt/pleroma/start.sh && \
-    chmod +x /opt/pleroma/start.sh
-
-# Default command
-CMD ["/opt/pleroma/start.sh"]
+# Set entrypoint and default command
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["mix ecto.migrate && mix phx.server"]
