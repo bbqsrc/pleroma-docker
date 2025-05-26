@@ -2,7 +2,7 @@
 # Based on https://docs.pleroma.social/backend/installation/alpine_linux_en/
 
 # Build stage
-FROM alpine:3.18 AS builder
+FROM alpine:3.21 AS builder
 
 # Build argument for Pleroma version (can be a branch, tag, or commit hash)
 ARG PLEROMA_VERSION=stable
@@ -28,6 +28,7 @@ RUN addgroup pleroma && \
 WORKDIR /opt/pleroma
 RUN git clone https://git.pleroma.social/pleroma/pleroma.git . && \
     git checkout ${PLEROMA_VERSION} && \
+    ls -la config/ && \
     chown -R pleroma:pleroma /opt/pleroma
 
 # Install Hex and Rebar
@@ -42,7 +43,7 @@ RUN mix deps.get --only prod
 RUN MIX_ENV=prod mix compile
 
 # Runtime stage
-FROM alpine:3.18
+FROM alpine:3.21
 
 # Install runtime dependencies
 RUN apk update && apk upgrade && \

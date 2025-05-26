@@ -48,15 +48,14 @@ This repository contains a Docker setup for Pleroma based on the [official Alpin
 
 4. **Generate Pleroma configuration:**
    ```bash
-   # Create config directory first
+   # Create local config directory
    mkdir -p config
    
-   # Run the configuration generator
-   docker-compose run --rm pleroma mix pleroma.instance gen
+   # Run the configuration generator using the config service
+   docker-compose run --rm pleroma-config mix pleroma.instance gen
    
-   # The generator will create config/generated_config.exs
-   # You need to review and rename it manually:
-   mv config/generated_config.exs config/prod.secret.exs
+   # Copy the generated config from the container
+   docker-compose run --rm pleroma-config cat config/generated_config.exs > config/prod.secret.exs
    ```
 
 5. **Configure nginx (optional but recommended):**

@@ -14,6 +14,21 @@ services:
       timeout: 10s
       retries: 5
 
+  # Service for generating config (no volume mounts to avoid conflicts)
+  pleroma-config:
+    build:
+      context: .
+      args:
+        PLEROMA_VERSION: ${PLEROMA_VERSION:-stable}
+    environment:
+      - MIX_ENV=prod
+      - DATABASE_URL=ecto://pleroma:pleroma@db/pleroma
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - config
+
   pleroma:
     build:
       context: .
@@ -28,7 +43,7 @@ services:
     volumes:
       - pleroma_uploads:/opt/pleroma/uploads
       - pleroma_static:/opt/pleroma/static
-      - ./config:/opt/pleroma/config
+      - ./config/prod.secret.exs:/opt/pleroma/config/prod.secret.exs:ro
     depends_on:
       db:
         condition: service_healthy
