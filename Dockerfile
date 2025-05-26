@@ -63,18 +63,6 @@ RUN apk update && apk upgrade && \
 RUN addgroup pleroma && \
     adduser -S -s /bin/false -h /opt/pleroma -H -G pleroma pleroma
 
-# Create directories for overlay filesystem (as root)
-RUN mkdir -p /config-overlay/upper /config-overlay/work && \
-    chown -R pleroma:pleroma /config-overlay
-
-# Copy init scripts directory
-COPY docker-entrypoint-init.d /docker-entrypoint-init.d
-RUN chmod +x /docker-entrypoint-init.d/*.sh
-
-# Copy and set up entrypoint script
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
-
 # Copy built application from builder stage
 COPY --from=builder --chown=pleroma:pleroma /opt/pleroma /opt/pleroma
 
@@ -92,9 +80,6 @@ RUN mix local.hex --force && \
 RUN mkdir -p uploads && \
     mkdir -p static
 
-# Switch back to root for startup script
-USER root
-
 # Expose port
 EXPOSE 4000
 
@@ -102,6 +87,4 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4000/api/v1/instance || exit 1
 
-# Set entrypoint and default command
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD []
+CMD ["sh", "-c", "mix ecto.migrate && mix phx.server"]
