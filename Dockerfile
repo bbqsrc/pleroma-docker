@@ -63,20 +63,13 @@ RUN apk update && apk upgrade && \
 RUN addgroup pleroma && \
     adduser -S -s /bin/false -h /opt/pleroma -H -G pleroma pleroma
 
-# Create directories for overlay filesystem and init scripts (as root)
-RUN mkdir -p /config-overlay/upper /config-overlay/work /docker-entrypoint-init.d && \
+# Create directories for overlay filesystem (as root)
+RUN mkdir -p /config-overlay/upper /config-overlay/work && \
     chown -R pleroma:pleroma /config-overlay
 
-# Create init script for overlay mount
-RUN echo '#!/bin/sh\n\
-# Create overlay mount for config directory\n\
-if [ -d "/config" ]; then\n\
-  echo "Setting up overlay filesystem for config..."\n\
-  mount -t overlay overlay \\\n\
-    -o lowerdir=/opt/pleroma/config,upperdir=/config,workdir=/config-overlay/work \\\n\
-    /opt/pleroma/config\n\
-fi' > /docker-entrypoint-init.d/01-config-overlay.sh && \
-    chmod +x /docker-entrypoint-init.d/01-config-overlay.sh
+# Copy init scripts directory
+COPY docker-entrypoint-init.d /docker-entrypoint-init.d
+RUN chmod +x /docker-entrypoint-init.d/*.sh
 
 # Copy and set up entrypoint script
 COPY docker-entrypoint.sh /docker-entrypoint.sh
