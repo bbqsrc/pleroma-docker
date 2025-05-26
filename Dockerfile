@@ -72,10 +72,11 @@ RUN chmod +x /opt/pleroma/start.sh
 # Set working directory
 WORKDIR /opt/pleroma
 
-RUN mkdir -p /tmp/config && chown -R pleroma:pleroma /tmp/config
-
 # Switch to pleroma user
 USER pleroma
+
+# Create config directory as pleroma user
+RUN mkdir -p /tmp/config
 
 # Install Hex and Rebar for runtime
 RUN mix local.hex --force && \
