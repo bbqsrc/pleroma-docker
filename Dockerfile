@@ -28,7 +28,6 @@ RUN addgroup pleroma && \
 WORKDIR /opt/pleroma
 RUN git clone https://git.pleroma.social/pleroma/pleroma.git . && \
     git checkout ${PLEROMA_VERSION} && \
-    ls -la config/ && \
     chown -R pleroma:pleroma /opt/pleroma
 
 # Install Hex and Rebar
@@ -72,6 +71,8 @@ RUN chmod +x /opt/pleroma/start.sh
 
 # Set working directory
 WORKDIR /opt/pleroma
+
+RUN mkdir -p /config && chown -R pleroma:pleroma /config
 
 # Switch to pleroma user
 USER pleroma
