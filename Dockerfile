@@ -87,5 +87,22 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
     CMD curl -f http://localhost:4000/api/v1/instance || exit 1
 
+# Create directories for overlay filesystem
+RUN mkdir -p /config-overlay/upper /config-overlay/work
+
+# Create startup script that sets up overlay mount
+RUN echo '#!/bin/sh\n\
+# Create overlay mount for config directory\n\
+if [ -d "/config" ]; then\n\
+  echo "Setting up overlay filesystem for config..."\n\
+  mount -t overlay overlay \\\n\
+    -o lowerdir=/opt/pleroma/config,upperdir=/config,workdir=/config-overlay/work \\\n\
+    /opt/pleroma/config\n\
+fi\n\
+\n\
+# Run migrations and start server\n\
+mix ecto.migrate && mix phx.server' > /opt/pleroma/start.sh && \
+    chmod +x /opt/pleroma/start.sh
+
 # Default command
-CMD ["sh", "-c", "mix ecto.migrate && mix phx.server"]
+CMD ["/opt/pleroma/start.sh"]

@@ -51,11 +51,11 @@ This repository contains a Docker setup for Pleroma based on the [official Alpin
    # Create local config directory
    mkdir -p config
    
-   # Run the configuration generator using the config service
-   docker-compose run --rm pleroma-config mix pleroma.instance gen
+   # Run the configuration generator
+   docker-compose run --rm pleroma mix pleroma.instance gen
    
-   # Copy the generated config from the container
-   docker-compose run --rm pleroma-config cat config/generated_config.exs > config/prod.secret.exs
+   # Copy the generated config to your local config directory
+   docker-compose run --rm pleroma cat config/generated_config.exs > config/prod.secret.exs
    ```
 
 5. **Configure nginx (optional but recommended):**
@@ -85,6 +85,7 @@ This repository contains a Docker setup for Pleroma based on the [official Alpin
 - **Manual setup required:** You must run the configuration generator and customize settings
 - **Database setup:** The database will be created automatically, but Pleroma configuration must reference it correctly
 - **SSL/Domain:** The nginx configuration is a template - you must customize it for your domain and SSL certificates
+- **OverlayFS:** The container uses OverlayFS to overlay your local `./config` directory over the source config, allowing you to add/modify config files without affecting the base image
 
 ## Configuration
 
@@ -138,7 +139,7 @@ The Pleroma configuration needs to be generated and stored in the `config/` dire
 - **Volumes:** 
   - `pleroma_uploads`: User uploads
   - `pleroma_static`: Static files
-  - `./config`: Configuration files
+  - `./config`: Local configuration files (mounted as OverlayFS upperdir)
 
 ### PostgreSQL
 - **Port:** 5432 (internal only)
